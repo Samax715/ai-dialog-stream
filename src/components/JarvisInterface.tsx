@@ -1,41 +1,56 @@
 
 import React, { useEffect, useState } from 'react';
-import { Zap, Wifi } from 'lucide-react';
+import { Zap, Wifi, Mic, MicOff } from 'lucide-react';
+import { useConversation } from '@11labs/react';
 
 const JarvisInterface = () => {
   const [isListening, setIsListening] = useState(false);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [conversationStarted, setConversationStarted] = useState(false);
 
+  const conversation = useConversation({
+    onConnect: () => {
+      console.log('Connected to ElevenLabs');
+      setConversationStarted(true);
+    },
+    onDisconnect: () => {
+      console.log('Disconnected from ElevenLabs');
+      setConversationStarted(false);
+      setIsListening(false);
+    },
+    onMessage: (message) => {
+      console.log('Message:', message);
+    },
+    onError: (error) => {
+      console.error('ElevenLabs error:', error);
+    }
+  });
+
+  // Update listening state based on conversation status
   useEffect(() => {
-    // Load the ElevenLabs ConvAI widget script
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
-    script.async = true;
-    script.type = 'text/javascript';
-    
-    script.onload = () => {
-      console.log('ElevenLabs script loaded successfully');
-      setScriptLoaded(true);
-    };
-    
-    script.onerror = () => {
-      console.error('Failed to load ElevenLabs script');
-    };
-    
-    document.head.appendChild(script);
+    setIsListening(conversation.isSpeaking || false);
+  }, [conversation.isSpeaking]);
 
-    // Simulate listening state changes for wave animations
-    const interval = setInterval(() => {
-      setIsListening(prev => !prev);
-    }, 2000);
+  const handleStartConversation = async () => {
+    try {
+      // Request microphone permission
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Start the conversation with your agent ID
+      await conversation.startSession({
+        agentId: 'agent_01jx29xwshf36a4w8rkxj7cn8n'
+      });
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+    }
+  };
 
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-      clearInterval(interval);
-    };
-  }, []);
+  const handleEndConversation = async () => {
+    try {
+      await conversation.endSession();
+    } catch (error) {
+      console.error('Failed to end conversation:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-black flex flex-col overflow-hidden relative">
@@ -60,9 +75,9 @@ const JarvisInterface = () => {
           </h1>
         </div>
         <div className="flex items-center gap-2 text-blue-300">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-sm">Online</span>
-          {scriptLoaded && <span className="text-xs ml-2">(Widget Ready)</span>}
+          <div className={`w-2 h-2 rounded-full animate-pulse ${conversationStarted ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+          <span className="text-sm">{conversationStarted ? 'Voice Ready' : 'Offline'}</span>
+          {conversation.status === 'connected' && <span className="text-xs ml-2">(Connected)</span>}
         </div>
       </div>
 
@@ -86,34 +101,36 @@ const JarvisInterface = () => {
 
           {/* Central Core */}
           <div className="relative w-96 h-96 flex items-center justify-center">
-            <div className={`w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-cyan-400 to-blue-600 shadow-2xl ${isListening ? 'animate-pulse-glow' : ''} flex items-center justify-center`}>
+            <div className={`w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-cyan-400 to-blue-600 shadow-2xl ${isListening ? 'animate-pulse-glow' : ''} flex items-center justify-center cursor-pointer`}
+                 onClick={conversationStarted ? handleEndConversation : handleStartConversation}>
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-300 to-blue-500 flex items-center justify-center">
-                <Wifi className="text-white" size={32} />
+                {conversationStarted ? (
+                  isListening ? <Wifi className="text-white" size={32} /> : <Mic className="text-white" size={32} />
+                ) : (
+                  <MicOff className="text-white" size={32} />
+                )}
               </div>
             </div>
           </div>
 
           {/* Status Indicators */}
           <div className="absolute top-8 right-8 text-blue-300 text-sm">
-            SYS STATUS: OPTIMAL
+            SYS STATUS: {conversationStarted ? 'OPTIMAL' : 'STANDBY'}
           </div>
           
           <div className="absolute bottom-8 left-8 text-blue-300 text-sm">
-            AI CORE ONLINE
+            {conversationStarted ? 'VOICE ACTIVE' : 'VOICE OFFLINE'}
           </div>
         </div>
-      </div>
-
-      {/* ElevenLabs Widget - Positioned prominently */}
-      <div className="fixed bottom-8 right-8 z-50">
-        <elevenlabs-convai agent-id="agent_01jx29xwshf36a4w8rkxj7cn8n"></elevenlabs-convai>
       </div>
 
       {/* Bottom Interface Elements */}
       <div className="p-6 flex justify-center items-center z-10">
         <div className="bg-black/40 backdrop-blur-xl rounded-full px-6 py-3 border border-blue-500/30 flex items-center gap-3">
-          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-blue-300 text-sm">Ready for voice interaction</span>
+          <div className={`w-3 h-3 rounded-full animate-pulse ${conversationStarted ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+          <span className="text-blue-300 text-sm">
+            {conversationStarted ? 'Voice assistant active - Click center to end' : 'Click center to start voice assistant'}
+          </span>
         </div>
       </div>
 
