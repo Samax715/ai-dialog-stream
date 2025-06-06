@@ -4,6 +4,7 @@ import { Zap, Wifi } from 'lucide-react';
 
 const JarvisInterface = () => {
   const [isListening, setIsListening] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
     // Load the ElevenLabs ConvAI widget script
@@ -11,6 +12,16 @@ const JarvisInterface = () => {
     script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
     script.async = true;
     script.type = 'text/javascript';
+    
+    script.onload = () => {
+      console.log('ElevenLabs script loaded successfully');
+      setScriptLoaded(true);
+    };
+    
+    script.onerror = () => {
+      console.error('Failed to load ElevenLabs script');
+    };
+    
     document.head.appendChild(script);
 
     // Simulate listening state changes for wave animations
@@ -19,7 +30,9 @@ const JarvisInterface = () => {
     }, 2000);
 
     return () => {
-      document.head.removeChild(script);
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
       clearInterval(interval);
     };
   }, []);
@@ -49,6 +62,7 @@ const JarvisInterface = () => {
         <div className="flex items-center gap-2 text-blue-300">
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           <span className="text-sm">Online</span>
+          {scriptLoaded && <span className="text-xs ml-2">(Widget Ready)</span>}
         </div>
       </div>
 
@@ -88,13 +102,11 @@ const JarvisInterface = () => {
             AI CORE ONLINE
           </div>
         </div>
+      </div>
 
-        {/* ElevenLabs Widget - Hidden but functional */}
-        <div className="absolute bottom-8 right-8">
-          <div className="bg-black/60 backdrop-blur-xl rounded-full p-4 border border-blue-500/30">
-            <elevenlabs-convai agent-id="agent_01jx29xwshf36a4w8rkxj7cn8n"></elevenlabs-convai>
-          </div>
-        </div>
+      {/* ElevenLabs Widget - Positioned prominently */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <elevenlabs-convai agent-id="agent_01jx29xwshf36a4w8rkxj7cn8n"></elevenlabs-convai>
       </div>
 
       {/* Bottom Interface Elements */}
