@@ -1,189 +1,143 @@
+
 import React, { useEffect, useState } from 'react';
-import { Zap, Cpu, Activity, Wifi, Phone, PhoneOff } from 'lucide-react';
+import { Zap, Wifi, Mic, MicOff } from 'lucide-react';
+import { useConversation } from '@11labs/react';
 
 const JarvisInterface = () => {
-  const [isWidgetVisible, setIsWidgetVisible] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [conversationStarted, setConversationStarted] = useState(false);
 
-  useEffect(() => {
-    // Load the ElevenLabs script if not already loaded
-    if (!document.querySelector('script[src="https://unpkg.com/@elevenlabs/convai-widget-embed"]')) {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
-      script.async = true;
-      script.type = 'text/javascript';
-      document.head.appendChild(script);
+  const conversation = useConversation({
+    onConnect: () => {
+      console.log('Connected to ElevenLabs');
+      setConversationStarted(true);
+    },
+    onDisconnect: () => {
+      console.log('Disconnected from ElevenLabs');
+      setConversationStarted(false);
+      setIsListening(false);
+    },
+    onMessage: (message) => {
+      console.log('Message:', message);
+    },
+    onError: (error) => {
+      console.error('ElevenLabs error:', error);
     }
-  }, []);
+  });
 
-  const toggleWidget = () => {
-    setIsWidgetVisible(!isWidgetVisible);
+  // Update listening state based on conversation status
+  useEffect(() => {
+    setIsListening(conversation.isSpeaking || false);
+  }, [conversation.isSpeaking]);
+
+  const handleStartConversation = async () => {
+    try {
+      // Request microphone permission
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Start the conversation with your agent ID
+      await conversation.startSession({
+        agentId: 'agent_01jx29xwshf36a4w8rkxj7cn8n'
+      });
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+    }
+  };
+
+  const handleEndConversation = async () => {
+    try {
+      await conversation.endSession();
+    } catch (error) {
+      console.error('Failed to end conversation:', error);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-black flex flex-col overflow-hidden relative">
-      {/* Enhanced Background Grid Pattern */}
-      <div className="absolute inset-0 opacity-30">
+      {/* Background Grid Pattern */}
+      <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0" style={{
           backgroundImage: `
-            linear-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59, 130, 246, 0.15) 1px, transparent 1px),
-            linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px),
-            radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 75% 75%, rgba(34, 211, 238, 0.1) 0%, transparent 50%)
+            linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px, 50px 50px, 10px 10px, 10px 10px, 200px 200px, 200px 200px'
+          backgroundSize: '50px 50px'
         }}></div>
       </div>
 
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Floating Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-r from-blue-500/20 to-cyan-400/20 rounded-full blur-xl animate-float"></div>
-        <div className="absolute top-3/4 right-1/4 w-48 h-48 bg-gradient-to-r from-cyan-500/15 to-blue-600/15 rounded-full blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-24 h-24 bg-gradient-to-r from-indigo-500/25 to-purple-500/25 rounded-full blur-lg animate-float" style={{ animationDelay: '4s' }}></div>
-        
-        {/* Enhanced Circuit-like Lines */}
-        <div className="absolute top-0 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-blue-400/30 to-transparent animate-pulse"></div>
-        <div className="absolute top-1/3 right-1/3 w-px h-24 bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-1/4 left-1/2 w-px h-20 bg-gradient-to-b from-transparent via-blue-300/35 to-transparent animate-pulse" style={{ animationDelay: '3s' }}></div>
-        
-        {/* Horizontal Circuit Lines */}
-        <div className="absolute top-1/4 left-0 w-24 h-px bg-gradient-to-r from-transparent via-blue-400/30 to-transparent animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-2/3 right-0 w-32 h-px bg-gradient-to-l from-transparent via-cyan-400/40 to-transparent animate-pulse" style={{ animationDelay: '4s' }}></div>
-        
-        {/* Neural Network Connections */}
-        <div className="absolute top-1/5 left-1/5 w-0.5 h-16 bg-gradient-to-b from-blue-400/20 to-cyan-400/20 transform rotate-45 animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-        <div className="absolute bottom-1/5 right-1/5 w-0.5 h-16 bg-gradient-to-b from-cyan-400/20 to-blue-400/20 transform -rotate-45 animate-pulse" style={{ animationDelay: '2.5s' }}></div>
-      </div>
-
       {/* Header */}
-      <div className="flex items-center justify-between p-6 z-20 relative">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full animate-pulse-glow"></div>
-            <div className="absolute inset-0 w-6 h-6 bg-blue-400/30 rounded-full animate-ping"></div>
-          </div>
-          <h1 className="text-4xl font-bold text-white flex items-center gap-4">
-            <Zap className="text-blue-400 drop-shadow-lg" size={36} />
+      <div className="flex items-center justify-between p-6 z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 bg-blue-400 rounded-full animate-pulse"></div>
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <Zap className="text-blue-400" size={32} />
             JARVIS
-            <span className="text-xs font-normal text-blue-300 ml-2">AI Assistant</span>
           </h1>
         </div>
-        <div className="flex items-center gap-4 text-blue-300">
-          <div className="flex items-center gap-2">
-            <Cpu className="w-4 h-4 animate-pulse" />
-            <span className="text-sm">Neural Core Active</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-green-400" />
-            <span className="text-sm">Voice Ready</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Wifi className="w-4 h-4 text-cyan-400" />
-            <span className="text-sm">Connected</span>
-          </div>
+        <div className="flex items-center gap-2 text-blue-300">
+          <div className={`w-2 h-2 rounded-full animate-pulse ${conversationStarted ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+          <span className="text-sm">{conversationStarted ? 'Voice Ready' : 'Offline'}</span>
+          {conversation.status === 'connected' && <span className="text-xs ml-2">(Connected)</span>}
         </div>
       </div>
 
-      {/* Main Interface Area */}
-      <div className="flex-1 flex items-center justify-center relative p-8 z-10">
-        {/* Outer Decorative Rings */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-[700px] h-[700px] rounded-full border border-blue-500/20 animate-spin" style={{ animationDuration: '20s' }}></div>
-          <div className="absolute w-[650px] h-[650px] rounded-full border border-cyan-400/15 animate-spin" style={{ animationDuration: '25s', animationDirection: 'reverse' }}></div>
-          <div className="absolute w-[600px] h-[600px] rounded-full border border-blue-300/10 animate-spin" style={{ animationDuration: '30s' }}></div>
-        </div>
+      {/* Main Interface */}
+      <div className="flex-1 flex items-center justify-center relative p-8">
+        {/* Central Circular Interface */}
+        <div className="relative">
+          {/* Outer Rings */}
+          <div className={`absolute inset-0 w-96 h-96 rounded-full border-2 border-blue-500/30 ${isListening ? 'animate-ping' : ''}`}></div>
+          <div className={`absolute inset-4 w-88 h-88 rounded-full border border-blue-400/20 ${isListening ? 'animate-pulse' : ''}`}></div>
+          <div className="absolute inset-8 w-80 h-80 rounded-full border border-blue-300/10"></div>
+          
+          {/* Wave Rings - Animated when talking */}
+          {isListening && (
+            <>
+              <div className="absolute inset-12 w-72 h-72 rounded-full border-2 border-cyan-400/40 animate-ping"></div>
+              <div className="absolute inset-16 w-64 h-64 rounded-full border border-cyan-300/30 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+              <div className="absolute inset-20 w-56 h-56 rounded-full border border-cyan-200/20 animate-ping" style={{ animationDelay: '1s' }}></div>
+            </>
+          )}
 
-        {/* Talking Animation Waves - show when widget is visible */}
-        {isWidgetVisible && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-[400px] h-[400px] rounded-full border-2 border-cyan-400/40 animate-ping" style={{ animationDuration: '1.5s' }}></div>
-            <div className="absolute w-[350px] h-[350px] rounded-full border-2 border-blue-400/40 animate-ping" style={{ animationDuration: '1.8s', animationDelay: '0.2s' }}></div>
-            <div className="absolute w-[300px] h-[300px] rounded-full border-2 border-cyan-300/40 animate-ping" style={{ animationDuration: '2s', animationDelay: '0.4s' }}></div>
-            <div className="absolute w-[250px] h-[250px] rounded-full border-2 border-blue-300/40 animate-ping" style={{ animationDuration: '2.2s', animationDelay: '0.6s' }}></div>
-          </div>
-        )}
-
-        {/* Central Interface Container */}
-        <div className="relative z-30">
-          {/* Enhanced Core with Hexagonal Design */}
-          <div className="relative bg-black/60 backdrop-blur-xl rounded-full border-2 border-blue-500/40 p-12 shadow-2xl">
-            {/* Inner Hexagonal Pattern */}
-            <div className="absolute inset-4 border border-cyan-400/30 rounded-full"></div>
-            <div className="absolute inset-8 border border-blue-400/20 rounded-full animate-spin" style={{ animationDuration: '15s' }}></div>
-            
-            {/* Central Core - Clickable */}
-            <div 
-              className="relative bg-gradient-to-br from-blue-950/90 to-gray-900/90 rounded-full border-2 border-cyan-400/30 p-8 shadow-inner cursor-pointer hover:scale-105 transition-all duration-300"
-              onClick={toggleWidget}
-            >
-              {/* Pulsing Core */}
-              <div className={`w-24 h-24 ${isWidgetVisible ? 'bg-gradient-to-r from-green-400/60 to-cyan-400/60' : 'bg-gradient-to-r from-blue-400/60 to-cyan-400/60'} rounded-full animate-pulse-glow flex items-center justify-center`}>
-                <div className={`w-16 h-16 ${isWidgetVisible ? 'bg-gradient-to-r from-green-500 to-cyan-500' : 'bg-gradient-to-r from-blue-500 to-cyan-500'} rounded-full flex items-center justify-center`}>
-                  {isWidgetVisible ? (
-                    <PhoneOff className="w-8 h-8 text-white" />
-                  ) : (
-                    <Phone className="w-8 h-8 text-white" />
-                  )}
-                </div>
-              </div>
-              
-              {/* Click instruction text */}
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-blue-300 text-sm whitespace-nowrap">
-                {isWidgetVisible ? 'Click to end call' : 'Click to start call'}
+          {/* Central Core */}
+          <div className="relative w-96 h-96 flex items-center justify-center">
+            <div className={`w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-cyan-400 to-blue-600 shadow-2xl ${isListening ? 'animate-pulse-glow' : ''} flex items-center justify-center cursor-pointer`}
+                 onClick={conversationStarted ? handleEndConversation : handleStartConversation}>
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-300 to-blue-500 flex items-center justify-center">
+                {conversationStarted ? (
+                  isListening ? <Wifi className="text-white" size={32} /> : <Mic className="text-white" size={32} />
+                ) : (
+                  <MicOff className="text-white" size={32} />
+                )}
               </div>
             </div>
-
-            {/* ElevenLabs Widget - Show when widget is visible */}
-            {isWidgetVisible && (
-              <div className="absolute inset-0 flex items-center justify-center z-50">
-                <elevenlabs-convai agent-id="agent_01jx74wnspejgadgg260xqchk2"></elevenlabs-convai>
-              </div>
-            )}
           </div>
 
-          {/* Orbital Elements */}
-          <div className="absolute -top-4 -left-4 w-4 h-4 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute -top-4 -right-4 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute -bottom-4 -left-4 w-3 h-3 bg-blue-300 rounded-full animate-ping" style={{ animationDelay: '3s' }}></div>
-          <div className="absolute -bottom-4 -right-4 w-4 h-4 bg-cyan-300 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
-        </div>
-
-        {/* Corner Decorative Elements */}
-        <div className="absolute top-8 left-8 w-20 h-20 border-l-2 border-t-2 border-blue-400/40 rounded-tl-lg"></div>
-        <div className="absolute top-8 right-8 w-20 h-20 border-r-2 border-t-2 border-cyan-400/40 rounded-tr-lg"></div>
-        <div className="absolute bottom-8 left-8 w-20 h-20 border-l-2 border-b-2 border-blue-400/40 rounded-bl-lg"></div>
-        <div className="absolute bottom-8 right-8 w-20 h-20 border-r-2 border-b-2 border-cyan-400/40 rounded-br-lg"></div>
-      </div>
-
-      {/* Bottom Status Bar */}
-      <div className="p-6 flex justify-center items-center z-20">
-        <div className="bg-black/50 backdrop-blur-xl rounded-full px-8 py-4 border border-blue-500/30 flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isWidgetVisible ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`}></div>
-            <span className="text-blue-300 text-sm">{isWidgetVisible ? 'Call Active' : 'Voice Assistant Ready'}</span>
+          {/* Status Indicators */}
+          <div className="absolute top-8 right-8 text-blue-300 text-sm">
+            SYS STATUS: {conversationStarted ? 'OPTIMAL' : 'STANDBY'}
           </div>
-          <div className="w-px h-6 bg-blue-500/30"></div>
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></div>
-            <span className="text-cyan-300 text-sm">Real-time Processing</span>
-          </div>
-          <div className="w-px h-6 bg-blue-500/30"></div>
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-            <span className="text-blue-200 text-xs">{isWidgetVisible ? 'Widget active' : 'Click center to start'}</span>
+          
+          <div className="absolute bottom-8 left-8 text-blue-300 text-sm">
+            {conversationStarted ? 'VOICE ACTIVE' : 'VOICE OFFLINE'}
           </div>
         </div>
       </div>
 
-      {/* Enhanced Floating Particles */}
-      <div className="absolute top-1/6 left-1/5 w-1 h-1 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-      <div className="absolute top-1/3 right-1/6 w-1 h-1 bg-cyan-300 rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
-      <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-blue-300 rounded-full animate-ping" style={{ animationDelay: '3s' }}></div>
-      <div className="absolute bottom-1/5 right-1/3 w-1 h-1 bg-cyan-400 rounded-full animate-pulse" style={{ animationDelay: '4s' }}></div>
-      <div className="absolute top-2/3 left-1/6 w-1 h-1 bg-blue-500 rounded-full animate-ping" style={{ animationDelay: '5s' }}></div>
-      <div className="absolute top-1/5 right-1/4 w-1 h-1 bg-cyan-500 rounded-full animate-pulse" style={{ animationDelay: '6s' }}></div>
+      {/* Bottom Interface Elements */}
+      <div className="p-6 flex justify-center items-center z-10">
+        <div className="bg-black/40 backdrop-blur-xl rounded-full px-6 py-3 border border-blue-500/30 flex items-center gap-3">
+          <div className={`w-3 h-3 rounded-full animate-pulse ${conversationStarted ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+          <span className="text-blue-300 text-sm">
+            {conversationStarted ? 'Voice assistant active - Click center to end' : 'Click center to start voice assistant'}
+          </span>
+        </div>
+      </div>
+
+      {/* Floating Elements */}
+      <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-cyan-300 rounded-full animate-pulse" style={{ animationDelay: '3s' }}></div>
+      <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-blue-300 rounded-full animate-ping" style={{ animationDelay: '4s' }}></div>
     </div>
   );
 };
