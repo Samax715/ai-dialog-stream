@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
-import { Zap, Cpu, Activity, Wifi } from 'lucide-react';
+import { Zap, Cpu, Activity, Wifi, Phone, PhoneOff } from 'lucide-react';
 
 const JarvisInterface = () => {
-  const [isTalking, setIsTalking] = useState(false);
+  const [isWidgetVisible, setIsWidgetVisible] = useState(false);
 
   useEffect(() => {
     // Load the ElevenLabs script if not already loaded
@@ -14,14 +13,11 @@ const JarvisInterface = () => {
       script.type = 'text/javascript';
       document.head.appendChild(script);
     }
-
-    // Simulate talking animation (this would normally be controlled by the voice assistant)
-    const interval = setInterval(() => {
-      setIsTalking(prev => !prev);
-    }, 2000);
-
-    return () => clearInterval(interval);
   }, []);
+
+  const toggleWidget = () => {
+    setIsWidgetVisible(!isWidgetVisible);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-black flex flex-col overflow-hidden relative">
@@ -99,8 +95,8 @@ const JarvisInterface = () => {
           <div className="absolute w-[600px] h-[600px] rounded-full border border-blue-300/10 animate-spin" style={{ animationDuration: '30s' }}></div>
         </div>
 
-        {/* Talking Animation Waves */}
-        {isTalking && (
+        {/* Talking Animation Waves - show when widget is visible */}
+        {isWidgetVisible && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-[400px] h-[400px] rounded-full border-2 border-cyan-400/40 animate-ping" style={{ animationDuration: '1.5s' }}></div>
             <div className="absolute w-[350px] h-[350px] rounded-full border-2 border-blue-400/40 animate-ping" style={{ animationDuration: '1.8s', animationDelay: '0.2s' }}></div>
@@ -117,22 +113,34 @@ const JarvisInterface = () => {
             <div className="absolute inset-4 border border-cyan-400/30 rounded-full"></div>
             <div className="absolute inset-8 border border-blue-400/20 rounded-full animate-spin" style={{ animationDuration: '15s' }}></div>
             
-            {/* Central Core */}
-            <div className="relative bg-gradient-to-br from-blue-950/90 to-gray-900/90 rounded-full border-2 border-cyan-400/30 p-8 shadow-inner">
+            {/* Central Core - Clickable */}
+            <div 
+              className="relative bg-gradient-to-br from-blue-950/90 to-gray-900/90 rounded-full border-2 border-cyan-400/30 p-8 shadow-inner cursor-pointer hover:scale-105 transition-all duration-300"
+              onClick={toggleWidget}
+            >
               {/* Pulsing Core */}
-              <div className="w-24 h-24 bg-gradient-to-r from-blue-400/60 to-cyan-400/60 rounded-full animate-pulse-glow flex items-center justify-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                  <div className="w-8 h-8 bg-white rounded-full animate-pulse"></div>
+              <div className={`w-24 h-24 ${isWidgetVisible ? 'bg-gradient-to-r from-green-400/60 to-cyan-400/60' : 'bg-gradient-to-r from-blue-400/60 to-cyan-400/60'} rounded-full animate-pulse-glow flex items-center justify-center`}>
+                <div className={`w-16 h-16 ${isWidgetVisible ? 'bg-gradient-to-r from-green-500 to-cyan-500' : 'bg-gradient-to-r from-blue-500 to-cyan-500'} rounded-full flex items-center justify-center`}>
+                  {isWidgetVisible ? (
+                    <PhoneOff className="w-8 h-8 text-white" />
+                  ) : (
+                    <Phone className="w-8 h-8 text-white" />
+                  )}
                 </div>
+              </div>
+              
+              {/* Click instruction text */}
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-blue-300 text-sm whitespace-nowrap">
+                {isWidgetVisible ? 'Click to end call' : 'Click to start call'}
               </div>
             </div>
 
-            {/* ElevenLabs Widget - Positioned in the center */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-              <div className="opacity-0 hover:opacity-100 transition-opacity duration-300">
+            {/* ElevenLabs Widget - Show when widget is visible */}
+            {isWidgetVisible && (
+              <div className="absolute inset-0 flex items-center justify-center z-50">
                 <elevenlabs-convai agent-id="agent_01jx74wnspejgadgg260xqchk2"></elevenlabs-convai>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Orbital Elements */}
@@ -153,8 +161,8 @@ const JarvisInterface = () => {
       <div className="p-6 flex justify-center items-center z-20">
         <div className="bg-black/50 backdrop-blur-xl rounded-full px-8 py-4 border border-blue-500/30 flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isTalking ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`}></div>
-            <span className="text-blue-300 text-sm">{isTalking ? 'Speaking...' : 'Voice Assistant Ready'}</span>
+            <div className={`w-3 h-3 rounded-full ${isWidgetVisible ? 'bg-green-400 animate-pulse' : 'bg-blue-400'}`}></div>
+            <span className="text-blue-300 text-sm">{isWidgetVisible ? 'Call Active' : 'Voice Assistant Ready'}</span>
           </div>
           <div className="w-px h-6 bg-blue-500/30"></div>
           <div className="flex items-center gap-3">
@@ -164,7 +172,7 @@ const JarvisInterface = () => {
           <div className="w-px h-6 bg-blue-500/30"></div>
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-            <span className="text-blue-200 text-xs">Click center to start conversation</span>
+            <span className="text-blue-200 text-xs">{isWidgetVisible ? 'Widget active' : 'Click center to start'}</span>
           </div>
         </div>
       </div>
