@@ -37,7 +37,7 @@ const JarvisInterface = () => {
       
       // Start the conversation with your agent ID
       await conversation.startSession({
-        agentId: 'agent_01jx74wnspejgadgg260xqchk2'
+        agentId: 'agent_01jx9j9c43f1jvzmjrkpyyj44v'
       });
     } catch (error) {
       console.error('Failed to start conversation:', error);
@@ -125,7 +125,7 @@ const JarvisInterface = () => {
 
         {/* ElevenLabs Widget */}
         <div className="fixed bottom-8 right-8 z-50">
-          <elevenlabs-convai agent-id="agent_01jx74wnspejgadgg260xqchk2"></elevenlabs-convai>
+          <elevenlabs-convai agent-id="agent_01jx9j9c43f1jvzmjrkpyyj44v"></elevenlabs-convai>
         </div>
       </div>
 
