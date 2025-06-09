@@ -6,11 +6,13 @@ import { useConversation } from '@11labs/react';
 const JarvisInterface = () => {
   const [isListening, setIsListening] = useState(false);
   const [conversationStarted, setConversationStarted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const conversation = useConversation({
     onConnect: () => {
       console.log('Connected to ElevenLabs');
       setConversationStarted(true);
+      setError(null);
     },
     onDisconnect: () => {
       console.log('Disconnected from ElevenLabs');
@@ -18,37 +20,59 @@ const JarvisInterface = () => {
       setIsListening(false);
     },
     onMessage: (message) => {
-      console.log('Message:', message);
+      console.log('Message received:', message);
     },
     onError: (error) => {
       console.error('ElevenLabs error:', error);
+      setError(error.message || 'Connection error occurred');
     }
   });
 
   // Update listening state based on conversation status
   useEffect(() => {
+    console.log('Conversation status:', conversation.status);
+    console.log('Is speaking:', conversation.isSpeaking);
     setIsListening(conversation.isSpeaking || false);
-  }, [conversation.isSpeaking]);
+  }, [conversation.isSpeaking, conversation.status]);
 
   const handleStartConversation = async () => {
     try {
-      // Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      setError(null);
+      console.log('Requesting microphone permission...');
+      
+      // Request microphone permission with more specific constraints
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
+      
+      console.log('Microphone permission granted');
+      console.log('Audio tracks:', stream.getAudioTracks());
       
       // Start the conversation with your agent ID
-      await conversation.startSession({
+      console.log('Starting conversation with agent...');
+      const conversationId = await conversation.startSession({
         agentId: 'agent_01jx29xwshf36a4w8rkxj7cn8n'
       });
+      
+      console.log('Conversation started with ID:', conversationId);
     } catch (error) {
       console.error('Failed to start conversation:', error);
+      setError(`Failed to start: ${error.message}`);
     }
   };
 
   const handleEndConversation = async () => {
     try {
+      console.log('Ending conversation...');
       await conversation.endSession();
+      console.log('Conversation ended');
     } catch (error) {
       console.error('Failed to end conversation:', error);
+      setError(`Failed to end: ${error.message}`);
     }
   };
 
@@ -80,6 +104,13 @@ const JarvisInterface = () => {
           {conversation.status === 'connected' && <span className="text-xs ml-2">(Connected)</span>}
         </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="mx-6 mb-4 p-3 bg-red-900/50 border border-red-500/50 rounded-lg text-red-200 text-sm z-10">
+          {error}
+        </div>
+      )}
 
       {/* Main Interface */}
       <div className="flex-1 flex items-center justify-center relative p-8">
@@ -121,6 +152,10 @@ const JarvisInterface = () => {
           <div className="absolute bottom-8 left-8 text-blue-300 text-sm">
             {conversationStarted ? 'VOICE ACTIVE' : 'VOICE OFFLINE'}
           </div>
+          
+          <div className="absolute bottom-8 right-8 text-blue-300 text-xs">
+            Status: {conversation.status || 'disconnected'}
+          </div>
         </div>
       </div>
 
@@ -132,6 +167,13 @@ const JarvisInterface = () => {
             {conversationStarted ? 'Voice assistant active - Click center to end' : 'Click center to start voice assistant'}
           </span>
         </div>
+      </div>
+
+      {/* Debug Info */}
+      <div className="absolute bottom-4 left-4 text-xs text-gray-400 z-10">
+        <div>Status: {conversation.status}</div>
+        <div>Speaking: {conversation.isSpeaking ? 'Yes' : 'No'}</div>
+        <div>Started: {conversationStarted ? 'Yes' : 'No'}</div>
       </div>
 
       {/* Floating Elements */}
