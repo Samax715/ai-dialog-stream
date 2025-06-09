@@ -24,7 +24,7 @@ const JarvisInterface = () => {
     },
     onError: (error) => {
       console.error('ElevenLabs error:', error);
-      setError(error.message || 'Connection error occurred');
+      setError(typeof error === 'string' ? error : (error?.message || 'Connection error occurred'));
     }
   });
 
@@ -52,16 +52,16 @@ const JarvisInterface = () => {
       console.log('Microphone permission granted');
       console.log('Audio tracks:', stream.getAudioTracks());
       
-      // Start the conversation with your agent ID
+      // Start the conversation with the new agent ID
       console.log('Starting conversation with agent...');
       const conversationId = await conversation.startSession({
-        agentId: 'agent_01jx29xwshf36a4w8rkxj7cn8n'
+        agentId: 'agent_01jx9sr7ypfrvtxc933wb86gbk'
       });
       
       console.log('Conversation started with ID:', conversationId);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to start conversation:', error);
-      setError(`Failed to start: ${error.message}`);
+      setError(`Failed to start: ${error?.message || error}`);
     }
   };
 
@@ -70,9 +70,9 @@ const JarvisInterface = () => {
       console.log('Ending conversation...');
       await conversation.endSession();
       console.log('Conversation ended');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to end conversation:', error);
-      setError(`Failed to end: ${error.message}`);
+      setError(`Failed to end: ${error?.message || error}`);
     }
   };
 
@@ -175,6 +175,16 @@ const JarvisInterface = () => {
         <div>Speaking: {conversation.isSpeaking ? 'Yes' : 'No'}</div>
         <div>Started: {conversationStarted ? 'Yes' : 'No'}</div>
       </div>
+
+      {/* ElevenLabs Conversational AI Widget */}
+      <div 
+        dangerouslySetInnerHTML={{
+          __html: `
+            <elevenlabs-convai agent-id="agent_01jx9sr7ypfrvtxc933wb86gbk"></elevenlabs-convai>
+            <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+          `
+        }}
+      />
 
       {/* Floating Elements */}
       <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
