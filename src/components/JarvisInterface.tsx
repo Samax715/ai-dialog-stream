@@ -37,7 +37,7 @@ const JarvisInterface = () => {
       
       // Start the conversation with your agent ID
       await conversation.startSession({
-        agentId: 'agent_01jx9j9c43f1jvzmjrkpyyj44v'
+        agentId: 'agent_01jx29xwshf36a4w8rkxj7cn8n'
       });
     } catch (error) {
       console.error('Failed to start conversation:', error);
@@ -122,11 +122,6 @@ const JarvisInterface = () => {
             {conversationStarted ? 'VOICE ACTIVE' : 'VOICE OFFLINE'}
           </div>
         </div>
-
-        {/* ElevenLabs Widget */}
-        <div className="fixed bottom-8 right-8 z-50">
-          <elevenlabs-convai agent-id="agent_01jx9j9c43f1jvzmjrkpyyj44v"></elevenlabs-convai>
-        </div>
       </div>
 
       {/* Bottom Interface Elements */}
@@ -143,9 +138,6 @@ const JarvisInterface = () => {
       <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '2s' }}></div>
       <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-cyan-300 rounded-full animate-pulse" style={{ animationDelay: '3s' }}></div>
       <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-blue-300 rounded-full animate-ping" style={{ animationDelay: '4s' }}></div>
-
-      {/* Script for ElevenLabs Widget */}
-      <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
     </div>
   );
 };
